@@ -22,12 +22,12 @@ func TestPixelate(t *testing.T) {
 	checkError(err)
 
 	// Pixelate and save output image.
-	out := util.Pixelate(im, 50)
-    w, err := os.Create(filepath.Join(wd, "testdata", "yellow_flowers_pix.jpeg"))
+	out := util.Pixelate(im, 64)
+	w, err := os.Create(filepath.Join(wd, "testdata", "yellow_flowers_pix.jpeg"))
 	checkError(err)
 	defer w.Close()
-    err = jpeg.Encode(w, out, nil)
-    checkError(err)
+	err = jpeg.Encode(w, out, nil)
+	checkError(err)
 }
 
 func checkError(err error) {

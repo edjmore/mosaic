@@ -3,42 +3,54 @@ package util
 import (
 	"image"
 	"image/color"
+    "sync"
 )
 
 func Pixelate(im image.Image, k int) image.Image {
-	// Init output image with same dimensions as input.
-	b := im.Bounds()
-	bOut := image.Rect(0, 0, b.Max.X-b.Min.X, b.Max.Y-b.Min.Y)
-	out := image.NewRGBA(bOut)
+    // Output image will have one pixel for each kxk grid from input.
+    b := im.Bounds()
+    w, h := (b.Max.X-b.Min.X)/k, (b.Max.Y-b.Min.Y)/k
+    out := image.NewRGBA(image.Rect(0, 0, w, h))
+    
+    var wg sync.WaitGroup
+    for x := b.Min.X; x < b.Max.X; x += k {
+        for y := b.Min.Y; y < b.Max.Y; y += k {
+            
+            // Compute average pixel color for grid and add to output.
+            wg.Add(1)
+            go func(x, y int) {
+                defer wg.Done()
+                
+                avgColor := computeAvgColor(im, image.Rect(x, y, x+k, y+k))
+                out.Set(x/k, y/k, avgColor)
+            }(x, y)
+        }
+    }
+    
+    wg.Wait()
+    return out
+}
 
-	for x := b.Min.X; x < b.Max.X; x += k {
-		for y := b.Min.Y; y < b.Max.Y; y += k {
-
-			// Compute average color of kxk grid.
-			var rs, gs, bs, pxCount uint32
-			for xx := x; xx < x+k && xx < b.Max.X; xx++ {
-				for yy := y; yy < y+k && yy < b.Max.Y; yy++ {
-					r, g, b, _ := im.At(xx, yy).RGBA()
-					rs += r
-					gs += g
-					bs += b
-					pxCount++
-				}
-			}
-			avgColor := color.RGBA{
-				uint8(rs / pxCount / 0x101),
-				uint8(gs / pxCount / 0x101),
-				uint8(bs / pxCount / 0x101),
-				0xff,
-			}
-
-			// Set output image pixels in grid to average color.
-			for xx := x; xx < x+k && xx < b.Max.X; xx++ {
-				for yy := y; yy < y+k && yy < b.Max.Y; yy++ {
-					out.Set(xx-b.Min.X, yy-b.Min.Y, avgColor)
-				}
-			}
-		}
-	}
-	return out
+// Compute the average pixel color within grid.
+func computeAvgColor(im image.Image, grid image.Rectangle) color.Color {
+    b := im.Bounds()
+    
+    var rs, gs, bs uint32
+    for x := grid.Min.X; x < grid.Max.X && x < b.Max.X; x++ {
+        for y := grid.Min.Y; y < grid.Max.Y && y < b.Max.Y; y++ {
+            
+            r, g, b, _ := im.At(x, y).RGBA()
+            rs += r
+            gs += g
+            bs += b
+        }
+    }
+    
+    pxCount := uint32((grid.Max.X-grid.Min.X) * (grid.Max.Y-grid.Min.Y))
+    return color.RGBA{
+        uint8(rs / pxCount / 0x101),
+        uint8(gs / pxCount / 0x101),
+        uint8(bs / pxCount / 0x101),
+        0xff,
+    }
 }
