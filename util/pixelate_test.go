@@ -41,7 +41,7 @@ func TestPixelate(t *testing.T) {
 	// Verify that the output image matches pre-computed checksum.
 	checksum, err := computeChecksum(outpath)
 	checkError(err)
-	expectedChecksum := "\xe2\xdf\xd3(\xd7\xc9\xc5Q\xc0\xc1Q\x0e\x87M\xaa\x9aq\x96f\xb6\x84\x11-x\x94ǘ(U\u007f\xf7\\"
+	expectedChecksum := "\xaa\xeaqm\x93E\xec@\xa3\x8d\xefJ1\xffEk\xb6(\xe4\x94\xcf`\xbf,\xea\xfc\xc4<\xd0zqz"
 	if checksum != expectedChecksum {
 		t.Errorf("checksums don't match: expected %q, but was %q", expectedChecksum, checksum)
 	}
