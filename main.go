@@ -19,8 +19,8 @@ import (
 
 // Result image dimensions (w, h) are scaled by K/X
 const (
-	K = 30
-	X = 20
+	K = 35
+	X = 10
 )
 
 func main() {
@@ -35,13 +35,17 @@ func main() {
 	fmt.Printf("\nconverting files in %q to JPEG\n", dirpath)
 	convertInputDir(dirpath, workdir)
 
-	// Convert tgt image to JPEG.
-	err = tifig.ConvertAndResize(tgtpath, respath, 4000, 4000)
-	checkError(err)
+	pixpath := tgtpath
+	if strings.HasSuffix(tgtpath, "heic") {
+		// Convert tgt image to JPEG.
+		err = tifig.ConvertAndResize(tgtpath, respath, 4000, 4000)
+		checkError(err)
+		pixpath = respath
+	}
 
 	// Pixelate the tgt image.
-	fmt.Printf("\npixelating %q\n", tgtpath)
-	pix := pixelateTarget(tgtpath, respath)
+	fmt.Printf("\npixelating %q\n", pixpath)
+	pix := pixelateTarget(pixpath, respath)
 
 	// Build kdree palette from converted input images.
 	fmt.Println("\nbuilding color palette")
@@ -76,10 +80,10 @@ func convertInputDir(indir, workdir string) {
 	wg.Wait()
 }
 
-func pixelateTarget(tgtpath, respath string) image.Image {
+func pixelateTarget(pixpath, respath string) image.Image {
 	defer timeit("pixelated target image")()
 
-	tgt := loadJpeg(respath)
+	tgt := loadJpeg(pixpath)
 	pix := util.Pixelate(tgt, X)
 	saveJpeg(pix, respath)
 	return pix
