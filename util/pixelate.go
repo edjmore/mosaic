@@ -21,7 +21,7 @@ func Pixelate(im image.Image, k int) image.Image {
             go func(x, y int) {
                 defer wg.Done()
                 
-                avgColor := computeAvgColor(im, image.Rect(x, y, x+k, y+k))
+                avgColor := ComputeAvgColor(im, image.Rect(x, y, x+k, y+k))
                 out.Set(x/k, y/k, avgColor)
             }(x, y)
         }
@@ -32,7 +32,7 @@ func Pixelate(im image.Image, k int) image.Image {
 }
 
 // Compute the average pixel color within grid.
-func computeAvgColor(im image.Image, grid image.Rectangle) color.Color {
+func ComputeAvgColor(im image.Image, grid image.Rectangle) color.Color {
     b := im.Bounds()
     
     var rs, gs, bs uint32
