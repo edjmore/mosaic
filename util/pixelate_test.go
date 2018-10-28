@@ -1,8 +1,8 @@
 package util_test
 
 import (
-    "crypto/sha256"
-    "image/jpeg"
+	"crypto/sha256"
+	"image/jpeg"
 	"io"
 	"io/ioutil"
 	"os"
@@ -21,7 +21,7 @@ func TestPixelate(t *testing.T) {
 	f, err := os.Open(inpath)
 	checkError(err)
 	im, err := jpeg.Decode(f)
-    f.Close()
+	f.Close()
 	checkError(err)
 
 	// Create tempdir for the pixelated file.
@@ -32,11 +32,11 @@ func TestPixelate(t *testing.T) {
 
 	// Pixelate and save output image.
 	out := util.Pixelate(im, 64)
-    w, err := os.Create(outpath)
-    checkError(err)
-    err = jpeg.Encode(w, out, nil)
-    w.Close()
-    checkError(err)
+	w, err := os.Create(outpath)
+	checkError(err)
+	err = jpeg.Encode(w, out, nil)
+	w.Close()
+	checkError(err)
 
 	// Verify that the output image matches pre-computed checksum.
 	checksum, err := computeChecksum(outpath)
