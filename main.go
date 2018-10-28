@@ -17,6 +17,12 @@ import (
 	"github.com/edjmore/mosaic/util"
 )
 
+// Result image dimensions (w, h) are scaled by K/X
+const (
+	K = 30
+	X = 20
+)
+
 func main() {
 	// Create workdir to store intermediate/temp images.
 	workdir, err := ioutil.TempDir("", "mosaic_")
@@ -62,8 +68,9 @@ func convertInputDir(indir, workdir string) {
 
 			path := filepath.Join(indir, file.Name())
 			outpath := filepath.Join(workdir, strings.TrimSuffix(file.Name(), "heic")+"jpeg")
-			err = tifig.ConvertAndResize(path, outpath, 50, 50)
-			checkError(err)
+			if err = tifig.ConvertAndResize(path, outpath, K, K); err != nil {
+				fmt.Printf("error converting %q: %v", path, err)
+			}
 		}(file)
 	}
 	wg.Wait()
@@ -73,7 +80,7 @@ func pixelateTarget(tgtpath, respath string) image.Image {
 	defer timeit("pixelated target image")()
 
 	tgt := loadJpeg(respath)
-	pix := util.Pixelate(tgt, 50)
+	pix := util.Pixelate(tgt, X)
 	saveJpeg(pix, respath)
 	return pix
 }
@@ -105,7 +112,7 @@ func createMosaic(pix image.Image, pal *kdtree.Kdtree, colormap map[color.Color]
 	usedPaths := make(map[string]bool)
 
 	b := pix.Bounds()
-	out := image.NewRGBA(image.Rect(0, 0, (b.Max.X-b.Min.X)*50, (b.Max.Y-b.Min.Y)*50))
+	out := image.NewRGBA(image.Rect(0, 0, (b.Max.X-b.Min.X)*K, (b.Max.Y-b.Min.Y)*K))
 	for x := 0; x < b.Max.X; x++ {
 		grid = append(grid, make([]string, 0))
 
@@ -135,9 +142,9 @@ func createMosaic(pix image.Image, pal *kdtree.Kdtree, colormap map[color.Color]
 					}
 
 					// Copy matching image to output image.
-					for xx := 0; xx < 50; xx++ {
-						for yy := 0; yy < 50; yy++ {
-							out.Set(x*50+xx, y*50+yy, im.At(xx, yy))
+					for xx := 0; xx < K; xx++ {
+						for yy := 0; yy < K; yy++ {
+							out.Set(x*K+xx, y*K+yy, im.At(xx, yy))
 						}
 					}
 				}
