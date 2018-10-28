@@ -40,17 +40,17 @@ func ComputeAvgColor(im image.Image, grid image.Rectangle) color.Color {
 		for y := grid.Min.Y; y < grid.Max.Y && y < b.Max.Y; y++ {
 
 			r, g, b, _ := im.At(x, y).RGBA()
-			rs += r
-			gs += g
-			bs += b
+			rs += r >> 8 
+			gs += g >> 8
+			bs += b >> 8
 		}
 	}
 
 	pxCount := uint32((grid.Max.X - grid.Min.X) * (grid.Max.Y - grid.Min.Y))
 	return color.RGBA{
-		uint8(rs / pxCount / 0x101),
-		uint8(gs / pxCount / 0x101),
-		uint8(bs / pxCount / 0x101),
+		uint8(rs / pxCount),
+		uint8(gs / pxCount),
+		uint8(bs / pxCount),
 		0xff,
 	}
 }
