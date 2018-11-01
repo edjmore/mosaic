@@ -1,4 +1,4 @@
-package mosaic_test
+package preprocess_test
 
 import (
 	"io/ioutil"
@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/edjmore/mosaic"
+	"github.com/edjmore/mosaic/preprocess"
 	"github.com/edjmore/mosaic/util"
 )
 
@@ -16,11 +16,11 @@ func TestPreprocessJpeg(t *testing.T) {
 	filename := filepath.Join(wd, "testdata", "gopher.jpeg")
 
 	// Create tempdir for the output file.
-	outdir, err := ioutil.TempDir("", "tifig_test_")
+	outdir, err := ioutil.TempDir("", "preprocess_test_")
 	checkError(err)
 	defer os.RemoveAll(outdir)
 
-	outpath, err := mosaic.PreprocessImageFile(filename, outdir, 200, 200)
+	outpath, err := preprocess.ImageFile(filename, outdir, 200)
 	if err != nil {
 		t.Error(err)
 	}
