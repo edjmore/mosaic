@@ -31,7 +31,7 @@ func ImageFile(filename, workdir string, size int) (string, error) {
 
 	if strings.HasSuffix(filename, ".png") {
 		return outpath, imageFile(filename, outpath, size, png.Decode)
-	} else if strings.HasSuffix(filename, ".jpeg") {
+	} else if strings.HasSuffix(filename, ".jpeg") || strings.HasSuffix(filename, ".jpg") {
 		return outpath, imageFile(filename, outpath, size, jpeg.Decode)
 	} else {
 		return "", fmt.Errorf("unknown image format: %q", filename)
