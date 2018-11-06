@@ -1,16 +1,14 @@
 package preprocess
 
 import (
-	"fmt"
 	"image"
 	"image/jpeg"
-	"image/png"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/edjmore/mosaic/tifig"
+	"github.com/edjmore/mosaic/util"
 	"github.com/nfnt/resize"
 	"github.com/oliamb/cutter"
 )
@@ -29,27 +27,14 @@ func ImageFile(filename, workdir string, size int) (string, error) {
 		return outpath, err
 	}
 
-	if strings.HasSuffix(filename, ".png") {
-		return outpath, imageFile(filename, outpath, size, png.Decode)
-	} else if strings.HasSuffix(filename, ".jpeg") || strings.HasSuffix(filename, ".jpg") {
-		return outpath, imageFile(filename, outpath, size, jpeg.Decode)
-	} else {
-		return "", fmt.Errorf("unknown image format: %q", filename)
+	img, err := util.LoadImage(filename)
+	if err != nil {
+		return "", err
 	}
+	return outpath, preprocessImageFile(img, outpath, size)
 }
 
-func imageFile(filename, outpath string, size int, decode func(io.Reader) (image.Image, error)) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-
-	img, err := decode(f)
-	f.Close()
-	if err != nil {
-		return err
-	}
-
+func preprocessImageFile(img image.Image, outpath string, size int) error {
 	// If img is not square, need to crop larger dimension before resizing.
 	b := img.Bounds()
 	w, h := b.Max.X-b.Min.X, b.Max.Y-b.Min.Y
@@ -58,6 +43,8 @@ func imageFile(filename, outpath string, size int, decode func(io.Reader) (image
 		if d > h {
 			d = h
 		}
+
+		var err error
 		img, err = cutter.Crop(img, cutter.Config{
 			Width:  d,
 			Height: d,
@@ -70,9 +57,6 @@ func imageFile(filename, outpath string, size int, decode func(io.Reader) (image
 
 	// Using nearest-neighbor interpolation b/c it's fast.
 	img = resize.Resize(uint(size), uint(size), img, resize.NearestNeighbor)
-	if err != nil {
-		return err
-	}
 
 	out, err := os.Create(outpath)
 	if err != nil {

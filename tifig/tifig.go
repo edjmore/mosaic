@@ -24,3 +24,16 @@ func ConvertAndResize(inpath, outpath string, width, height int) error {
 	}
 	return err
 }
+
+func Convert(inpath, outpath string) error {
+	cmd := exec.Command(
+		"tifig",
+		inpath,
+		outpath,
+	)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		err = fmt.Errorf("%v: %s", err, out)
+	}
+	return err
+}
